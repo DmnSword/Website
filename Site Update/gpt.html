@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat with GPT</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+
+    input {
+      width: 70%;
+      padding: 0.5rem;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: #fff;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin-left: 0.5rem;
+      background: #333;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    pre {
+      margin-top: 1rem;
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 4px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>Ask ChatGPT</h2>
+  <input id="input" placeholder="Ask something..." />
+  <button id="send">Send</button>
+  <pre id="output">...</pre>
+
+  <script>
+    document.getElementById("send").addEventListener("click", async () => {
+      const input = document.getElementById("input").value;
+      const output = document.getElementById("output");
+      output.textContent = "Thinking...";
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: input })
+        });
+
+        if (!res.ok) {
+          output.textContent = "Error: " + res.statusText;
+          return;
+        }
+
+        const data = await res.json();
+        output.textContent = data.reply || "No response";
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+        console.error("Fetch error:", err);
+      }
+    });
+  </script>
+</body>
+</html>
