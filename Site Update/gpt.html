@@ -9,6 +9,12 @@
       color: #f0f0f0;
       font-family: sans-serif;
       padding: 2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
     }
 
     input {
@@ -17,6 +23,7 @@
       background: #1e1e1e;
       border: 1px solid #333;
       color: #fff;
+      border-radius: 4px;
     }
 
     button {
@@ -25,11 +32,16 @@
       background: #333;
       border: none;
       color: #fff;
+      border-radius: 4px;
       cursor: pointer;
     }
 
+    button:hover {
+      background-color: #444;
+    }
+
     pre {
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       background: #1e1e1e;
       padding: 1rem;
       border-radius: 4px;
@@ -41,47 +53,40 @@
   <h2>Ask ChatGPT</h2>
   <input id="input" placeholder="Ask something..." />
   <button id="send">Send</button>
-  <pre id="output">...</pre>
-<script>
-  let apiKey = ""; // Stored across requests
+  <pre id="output">Response will appear here...</pre>
 
-  document.getElementById("send").addEventListener("click", async () => {
-    const input = document.getElementById("input").value;
-    const output = document.getElementById("output");
+  <script>
+    document.getElementById("send").addEventListener("click", async () => {
+      const input = document.getElementById("input").value;
+      const output = document.getElementById("output");
 
-    if (!apiKey) {
-      const entered = prompt("Enter access key:");
-      if (!entered) {
-        alert("Access key is required.");
-        return;
-      }
-      apiKey = entered;
-    }
-
-    output.textContent = "Thinking...";
-
-    try {
-      const response = await fetch(`/api/chat?key=${encodeURIComponent(apiKey)}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: input })
-      });
-
-      if (!response.ok) {
-        output.textContent = "Error: " + (await response.text());
+      if (!input.trim()) {
+        output.textContent = "Please enter a question.";
         return;
       }
 
-      const data = await response.json();
-      output.textContent = data.reply || "No response.";
-    } catch (err) {
-      output.textContent = "Fetch error: " + err.message;
-    }
-  });
-</script>
+      output.textContent = "Thinking...";
 
- 
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message: input })
+        });
+
+        if (!response.ok) {
+          output.textContent = "Error: " + (await response.text());
+          return;
+        }
+
+        const data = await response.json();
+        output.textContent = data.reply || "No response.";
+      } catch (err) {
+        output.textContent = "Fetch error: " + err.message;
+      }
+    });
+  </script>
 </body>
 </html>
