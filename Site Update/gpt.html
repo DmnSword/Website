@@ -42,32 +42,46 @@
   <input id="input" placeholder="Ask something..." />
   <button id="send">Send</button>
   <pre id="output">...</pre>
+<script>
+  let apiKey = ""; // Stored across requests
 
-  <script>
-    document.getElementById("send").addEventListener("click", async () => {
-      const input = document.getElementById("input").value;
-      const output = document.getElementById("output");
-      output.textContent = "Thinking...";
+  document.getElementById("send").addEventListener("click", async () => {
+    const input = document.getElementById("input").value;
+    const output = document.getElementById("output");
 
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: input })
-        });
-
-        if (!res.ok) {
-          output.textContent = "Error: " + res.statusText;
-          return;
-        }
-
-        const data = await res.json();
-        output.textContent = data.reply || "No response";
-      } catch (err) {
-        output.textContent = "Error: " + err.message;
-        console.error("Fetch error:", err);
+    if (!apiKey) {
+      const entered = prompt("Enter access key:");
+      if (!entered) {
+        alert("Access key is required.");
+        return;
       }
-    });
-  </script>
+      apiKey = entered;
+    }
+
+    output.textContent = "Thinking...";
+
+    try {
+      const response = await fetch(`/api/chat?key=${encodeURIComponent(apiKey)}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: input })
+      });
+
+      if (!response.ok) {
+        output.textContent = "Error: " + (await response.text());
+        return;
+      }
+
+      const data = await response.json();
+      output.textContent = data.reply || "No response.";
+    } catch (err) {
+      output.textContent = "Fetch error: " + err.message;
+    }
+  });
+</script>
+
+ 
 </body>
 </html>
